@@ -25,12 +25,11 @@ TARGET_2ND_CPU_VARIANT := generic
 AB_OTA_UPDATER := true
 TARGET_NO_RECOVERY := true
 BOARD_USES_RECOVERY_AS_BOOT := true
-BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 
 # Bootimg configuration
 BOARD_BOOT_HEADER_VERSION := 3
-BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOT_HEADER_VERSION)
-TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel
+BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOT_HEADER_VERSION) --cmdline "androidboot.selinux=permissive loop.max_part=7 twrpfastboot=1"
+TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/Image.gz
 BOARD_BOOTIMAGE_PARTITION_SIZE := 100663296
 BOARD_RAMDISK_USE_LZ4 := false
 
@@ -40,7 +39,7 @@ BOARD_KERNEL_CMDLINE += loop.max_part=7
 
 # Memorycard fix
 BOARD_SUPPRESS_SECURE_ERASE := true
-TW_USE_FSCRYPT_POLICY := 1
+AERA_USE_FSCRYPT_POLICY := 1
 
 # Metadata partition
 BOARD_USES_METADATA_PARTITION := true
@@ -82,45 +81,44 @@ TARGET_USERIMAGES_USE_F2FS := true
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
 ##### TWRP / OrangeFox Flags #####
-TW_THEME := portrait_hdpi
+AERA_THEME := portrait_hdpi
 RECOVERY_SDCARD_ON_DATA := true
 TARGET_RECOVERY_QCOM_RTC_FIX := true
-TW_EXTRA_LANGUAGES := true
-TW_INCLUDE_NTFS_3G := true
-TW_USE_TOOLBOX := true
-TW_INCLUDE_RESETPROP := true
-TW_INCLUDE_REPACKTOOLS := true
-TW_INPUT_BLACKLIST := "hbtp_vm"
+AERA_EXTRA_LANGUAGES := true
+AERA_INCLUDE_NTFS_3G := true
+AERA_USE_TOOLBOX := true
+AERA_INCLUDE_RESETPROP := true
+AERA_INCLUDE_REPACKTOOLS := true
+AERA_INPUT_BLACKLIST := "hbtp_vm"
 
 # Display & Backlight Fixes (Fixes Black Screen on Qualcomm SM6375)
-TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel0-backlight/brightness"
-TW_DEFAULT_BRIGHTNESS := 1000
-TW_MAX_BRIGHTNESS := 3514
-TW_NO_SCREEN_BLANK := true
-TW_SCREEN_BLANK_ON_BOOT := true
+AERA_BRIGHTNESS_PATH := "/sys/class/backlight/panel0-backlight/brightness"
+AERA_DEFAULT_BRIGHTNESS := 1000
+AERA_MAX_BRIGHTNESS := 3514
+AERA_NO_SCREEN_BLANK := true
+AERA_SCREEN_BLANK_ON_BOOT := true
 
 # Logging & Services
-TWRP_INCLUDE_LOGCAT := true
 TARGET_USES_LOGD := true
 TARGET_USES_MKE2FS := true
-TW_EXCLUDE_APEX := true
-TW_FRAMERATE := 90
-TW_USE_LEGACY_BATTERY_SERVICES := true
-TW_ALLOW_REWRITE_SUPER_METADATA := true
-TW_INCLUDE_LPDUMP := true
-TW_HAS_EDL_MODE := true
+AERA_EXCLUDE_APEX := true
+AERA_FRAMERATE := 90
+AERA_USE_LEGACY_BATTERY_SERVICES := true
+AERA_ALLOW_REWRITE_SUPER_METADATA := true
+AERA_INCLUDE_LPDUMP := true
+AERA_HAS_EDL_MODE := true
 
 # USB & Fastbootd (TW_EXCLUDE_DEFAULT_USB_INIT disabled taaki ADB zinda rahe)
-TW_EXCLUDE_DEFAULT_USB_INIT := true
+AERA_EXCLUDE_DEFAULT_USB_INIT := true
 
 # Kernel module loading for touch, battery etc
-TW_LOAD_VENDOR_MODULES := $(shell echo \"$(shell ls $(DEVICE_PATH)/recovery/root/vendor/lib/modules/1.1 2>/dev/null)\")
-TW_LOAD_VENDOR_BOOT_MODULES := true
+AERA_LOAD_VENDOR_MODULES := $(shell echo \"$(shell ls $(DEVICE_PATH)/recovery/root/vendor/lib/modules/1.1 2>/dev/null)\")
+AERA_LOAD_VENDOR_BOOT_MODULES := true
 
 # Crypto
-TW_INCLUDE_CRYPTO := true
-TW_INCLUDE_CRYPTO_FBE := true
-TW_INCLUDE_FBE_METADATA_DECRYPT := true
+AERA_INCLUDE_CRYPTO := true
+AERA_INCLUDE_CRYPTO_FBE := true
+AERA_INCLUDE_FBE_METADATA_DECRYPT := true
 BOARD_USES_QCOM_FBE_DECRYPTION := true
 
 # Required Linker Config and Hardware Libraries (Including DRM & Display HALs)
@@ -152,3 +150,20 @@ BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX_LOCATION := 1
 
 # Extras
 TARGET_VENDOR_PROP += $(DEVICE_PATH)/vendor.prop
+
+# Additional AERA Utilities
+AERA_INCLUDE_LIBRESETPROP := true
+AERA_INCLUDE_LOGCAT := true
+AERA_INCLUDE_FASTBOOTD := true
+
+# Security Patch Spoofing for Keymaster Decryption
+VENDOR_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
+BOOT_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
+
+# Expand the XZ-compressed runtime in RAM during early init.
+AERA_USE_EXTREME_COMPRESSION := 1
+
+# Virtual A/B & Prebuilt Kernel Flags
+AERA_NO_BIND_SYSTEM := true
+AERA_SKIP_ADDITIONAL_FSTAB := true
+AERA_FORCE_PREBUILT_KERNEL := true

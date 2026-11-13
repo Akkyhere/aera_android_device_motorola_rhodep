@@ -1,54 +1,55 @@
-# Basic variables list
+FDEVICE="rhodep"
 
-export LC_ALL="C"
-export ALLOW_MISSING_DEPENDENCIES=true
+aera_get_target_device() {
+    export script_path="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+    if echo "$script_path" | grep -q "$FDEVICE"; then
+        AERA_BUILD_DEVICE="$FDEVICE"
+    elif echo "$0" | grep -q "$FDEVICE"; then
+        AERA_BUILD_DEVICE="$FDEVICE"
+    fi
+}
 
-if [ "$BUILD_OFOX" = "true" ]; then
-    # If you building OrangeFox, then do "export BUILD_OFOX=true"
-    # See orangefox_build_vars.txt in fox_12.1/vendor/recovery/ for full list of OrangeFox variables
+if [ -z "$AERA_BUILD_DEVICE" ]; then
+    aera_get_target_device
+fi
 
-    echo -e "[✨] Starting to add OrangeFox-rhodep variables..."
+if [ "$AERA_BUILD_DEVICE" = "$FDEVICE" ]; then
+    echo "Detected build device: $AERA_BUILD_DEVICE"
 
-    # About
-    export OF_MAINTAINER=Akky
-    export FOX_MAINTAINER_PATCH_VERSION=$(date +%y%m%d)
+    # Build Identity
+    export AERA_BUILD_STATUS=Unofficial
+    export AERA_BUILD_TYPE=Stable
 
-    # A/B
-    export FOX_VIRTUAL_AB_DEVICE=1
-    export OF_DEVICE_WITHOUT_RECOVERY_PARTITION=1
-    export FOX_USE_TWRP_RECOVERY_IMAGE_BUILDER=1
+    # Virtual A/B Configuration (Moto G82)
+    export AERA_VIRTUAL_AB_DEVICE=1
+    export AERA_RECOVERY_SYSTEM_PARTITION="/dev/block/mapper/system"
+    export AERA_RECOVERY_VENDOR_PARTITION="/dev/block/mapper/vendor"
 
-    # Binaries
-    export FOX_USE_TAR_BINARY=1
-    export FOX_USE_SED_BINARY=1
-    export FOX_USE_GREP_BINARY=1
-    export FOX_USE_XZ_UTILS=1
-    export FOX_USE_BUSYBOX_BINARY=1
-    export FOX_ENABLE_APP_MANAGER=1
-    export FOX_DELETE_AROMAFM=1
+    # Shell & Compression Binaries
+    export AERA_USE_BASH_SHELL=1
+    export AERA_USE_NANO_EDITOR=1
+    export AERA_USE_TAR_BINARY=1
+    export AERA_USE_LZ4_BINARY=1
+    export AERA_USE_SED_BINARY=1
+    export AERA_USE_XZ_UTILS=1
+    export AERA_USE_ZSTD_BINARY=1
+    export AERA_USE_BUSYBOX_BINARY=1
+    export AERA_USE_GREP_BINARY=1
+    export AERA_DELETE_AROMAFM=1
+    export AERA_REMOVE_AAPT=1
 
-    # Bash
-    export FOX_USE_BASH_SHELL=1
+    # Root Manager (KernelSU / KSU-Next / SukiSU / Magisk)
+    export AERA_DELETE_MAGISK_ADDON=1
+    export AERA_ENABLE_ROOT_MANAGER=0
 
-    # Dynamic full size
-    export OF_DYNAMIC_FULL_SIZE=8613003264
+    # Network & Early Pre-Decrypt Settings Cache (/metadata exists on rhodep)
+    export AERA_ENABLE_MOBILE_DATA=1
+    export AERA_SETTINGS_ROOT_DIRECTORY="/metadata"
+    export AERA_ALLOW_EARLY_SETTINGS_LOAD=1
+    export AERA_RESET_SETTINGS="disabled"
 
-    # UI display settings
-    export OF_SCREEN_H=2400
-    export OF_STATUS_H=100
-    export OF_STATUS_INDENT_LEFT=48
-    export OF_STATUS_INDENT_RIGHT=48
-    export OF_HIDE_NOTCH=1
-    export OF_CLOCK_POS=1
-    export OF_ALLOW_DISABLE_NAVBAR=0
-
-    # Quick backup list
-    export OF_QUICK_BACKUP_LIST="/boot;/data;"
-
-    # Security
-    export OF_ADVANCED_SECURITY=1
-
-    echo -e "[✔] If you see this message, all OrangeFox variables have been added successfully!"
+    unset AERA_VARIANT
+    unset AERA_MAINTAINER_PATCH_VERSION
 else
-    echo -e "[✘] BUILD_OFOX is not set to true. Skipping OrangeFox variables."
+    echo "I: vendorsetup.sh skipped; device mismatch or environment issue."
 fi

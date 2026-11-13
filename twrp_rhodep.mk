@@ -14,5 +14,8 @@ PRODUCT_MANUFACTURER := motorola
 # Default device path for tree
 DEVICE_PATH := device/$(PRODUCT_BRAND)/$(PRODUCT_DEVICE)
 
-# Inherit from device
+# Inherit from device & AERA configuration
 $(call inherit-product, $(DEVICE_PATH)/device.mk)
+$(call inherit-product, $(DEVICE_PATH)/aera_rhodep.mk)
+
+PRODUCT_ENABLE_UFFD_GC := false
