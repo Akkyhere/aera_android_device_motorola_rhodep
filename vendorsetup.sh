@@ -18,7 +18,7 @@ if [ "$AERA_BUILD_DEVICE" = "$FDEVICE" ]; then
 
     # Build Identity
     export AERA_BUILD_STATUS=Unofficial
-    export AERA_BUILD_TYPE=Stable
+    export AERA_BUILD_TYPE=Beta
 
     # Virtual A/B Configuration (Moto G82)
     export AERA_VIRTUAL_AB_DEVICE=1
