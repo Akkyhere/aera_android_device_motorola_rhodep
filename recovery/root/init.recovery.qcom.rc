@@ -1,4 +1,5 @@
 import /init.recovery.qcom_decrypt.rc
+import /init.recovery.fingerprint.rc
 
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
@@ -21,7 +22,6 @@ on property:vendor.sys.listeners.registered=true
     start keymaster-4-1-qti
 
 on property:twrp.all.users.decrypted=true
-    stop qseecomd
     stop gatekeeper-1-0-qti
     stop keymaster-4-1-qti
 
@@ -64,6 +64,7 @@ on early-boot
     insmod /vendor/lib/modules/1.1/touchscreen_mmi.ko
     insmod /vendor/lib/modules/1.1/goodix_brl_mmi.ko
     insmod /vendor/lib/modules/1.1/ldo_vibrator_mmi.ko
+    insmod /vendor/lib/modules/1.1/rbs_fps_mmi.ko
 
 on boot
     wait /sys/class/udc/4e00000.dwc3 10

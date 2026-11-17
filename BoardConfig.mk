@@ -170,3 +170,30 @@ AERA_FORCE_PREBUILT_KERNEL := true
 
 # Flashlight (V4L2 camera-subdev flash only; no sysfs LED class on rhodep)
 OF_FLASHLIGHT_ENABLE := 0
+
+# Authenticate the AERA screen lock using existing Android owner fingerprints.
+AERA_SUPPORT_FINGERPRINT := 1
+AERA_FINGERPRINT_BACKEND := hidl
+
+ifneq ($(AERA_SUPPORT_FINGERPRINT),1)
+BOARD_RECOVERY_IMAGE_PREPARE += rm -f \
+    $(TARGET_RECOVERY_ROOT_OUT)/system/bin/aera-fingerprint \
+    $(TARGET_RECOVERY_ROOT_OUT)/system/bin/aera-fingerprint-hidl \
+    $(TARGET_RECOVERY_ROOT_OUT)/init.recovery.fingerprint.rc \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/bin/aera-fingerprint-prepare \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service-ets \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/etc/vintf/manifest/aera.fingerprint.xml \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib/modules/1.1/rbs_fps_mmi.ko \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib64/com.motorola.hardware.biometric.fingerprint@1.0.so \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib64/hw/libets_teeclient_v2.so \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib64/libRbsFlow.so \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib64/libqti-perfd-client.so \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib64/libswregistrationalgo.so \
+    $(TARGET_RECOVERY_ROOT_OUT)/vendor/lib64/vendor.egistec.hardware.fingerprint@4.0.so; \
+    sed -i '\|^import /init.recovery.fingerprint.rc|d' \
+        $(TARGET_RECOVERY_ROOT_OUT)/init.recovery.qcom.rc
+endif
+
+ifeq ($(AERA_SUPPORT_FINGERPRINT),1)
+AERA_POST_DECRYPT_MODULES := "rbs_fps_mmi.ko"
+endif

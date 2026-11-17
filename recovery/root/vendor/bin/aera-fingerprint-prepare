@@ -1,0 +1,53 @@
+#!/system/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Rhodep: expose slot-matched modem firmware, persist calibration, and side sensor geometry for Egistec ET528.
+PATH=/system/bin:/sbin
+export PATH
+
+requested() { [ "$(getprop vendor.aera.fingerprint.start)" = 1 ]; }
+fail() { echo "AERA fingerprint: $*" >&2; exit 1; }
+
+requested || exit 0
+[ "$(getprop post.decrypt.modules)" = true ] || fail "post-decryption setup is not ready"
+
+slot="$(getprop ro.boot.slot_suffix)"
+mkdir -p /firmware /mnt/vendor/persist || exit 1
+
+if [ ! -f /firmware/image/egtzappf.mdt ]; then
+    if [ -f /firmware_mnt/image/egtzappf.mdt ]; then
+        mount -o bind /firmware_mnt /firmware || fail "cannot bind /firmware_mnt"
+    elif [ -f /vendor/firmware_mnt/image/egtzappf.mdt ]; then
+        mount -o bind /vendor/firmware_mnt /firmware || fail "cannot bind /vendor/firmware_mnt"
+    else
+        mount -t ext4 -o ro "/dev/block/bootdevice/by-name/modem${slot}" /firmware 2>/dev/null || \
+            mount -t vfat -o ro "/dev/block/bootdevice/by-name/modem${slot}" /firmware || \
+            fail "cannot mount modem firmware"
+    fi
+fi
+[ -f /firmware/image/egtzappf.mdt ] || fail "egtzappf TrustZone firmware is missing"
+
+if [ ! -d /mnt/vendor/persist/fps ]; then
+    mount -t ext4 -o rw,noatime,nosuid,nodev \
+        /dev/block/bootdevice/by-name/persist /mnt/vendor/persist || fail "cannot mount persist"
+fi
+[ -e /persist ] || ln -s /mnt/vendor/persist /persist
+mkdir -p /persist/egis
+chmod 0770 /persist/egis
+chown system:system /persist/egis
+
+if [ ! -e /dev/esfp0 ] && [ -f /vendor/lib/modules/1.1/rbs_fps_mmi.ko ]; then
+    insmod /vendor/lib/modules/1.1/rbs_fps_mmi.ko
+fi
+[ -e /dev/esfp0 ] || fail "/dev/esfp0 sensor node is missing"
+chown system:system /dev/esfp0
+chmod 0660 /dev/esfp0
+
+# Moto G82 5G (rhodep) side power-button capacitive fingerprint sensor geometry (1080x2400)
+setprop vendor.aera.fingerprint.sensor_x 1070
+setprop vendor.aera.fingerprint.sensor_y 1180
+setprop vendor.aera.fingerprint.sensor_radius 60
+setprop vendor.aera.fingerprint.display_width 1080
+setprop vendor.aera.fingerprint.display_height 2400
+
+setprop vendor.hw.fps.ident egis
+requested && setprop vendor.aera.fingerprint.ready 1
