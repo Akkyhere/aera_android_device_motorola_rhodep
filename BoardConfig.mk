@@ -167,3 +167,6 @@ AERA_USE_EXTREME_COMPRESSION := 1
 AERA_NO_BIND_SYSTEM := true
 AERA_SKIP_ADDITIONAL_FSTAB := true
 AERA_FORCE_PREBUILT_KERNEL := true
+
+# Flashlight (V4L2 camera-subdev flash only; no sysfs LED class on rhodep)
+OF_FLASHLIGHT_ENABLE := 0
