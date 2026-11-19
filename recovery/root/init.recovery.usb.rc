@@ -1,6 +1,8 @@
+# Early init: keep configfs disabled until /config and gadget g1 are created in on fs
 on early-fs
     setprop sys.usb.configfs 0
 
+# Mount configfs, create g1 gadget/strings/functions, mount FunctionFS, and set PID/controller properties
 on fs
     mkdir /config
     mount configfs none /config
@@ -28,17 +30,21 @@ on fs
     mkdir /dev/usb-ffs/adb 0770 shell system
     mkdir /dev/usb-ffs/fastboot 0770 shell system
     mount functionfs mtp /dev/usb-ffs/mtp uid=1024,gid=1024,rmode=0770,fmode=0660,no_disconnect=1
-    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=1000,rmode=0770,fmode=0660,no_disconnect=1
+    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=1000,rmode=0770,fmode=0660
     mount functionfs fastboot /dev/usb-ffs/fastboot uid=1000,gid=1000,rmode=0770,fmode=0660,no_disconnect=1
     setprop sys.usb.mtp.device_type 3
     setprop sys.usb.mtp.batchcancel 1
     setprop sys.usb.controller 4e00000.dwc3
+    setprop ro.recovery.usb.adb.pid 2e81
+    setprop ro.recovery.usb.fastboot.pid 2e80
     setprop sys.usb.configfs 1
 
+# Sync UDC controller name from bootloader property and wait for the UDC node
 on property:ro.boot.usbcontroller=*
     setprop sys.usb.controller ${ro.boot.usbcontroller}
     wait /sys/class/udc/${ro.boot.usbcontroller} 1
 
+# Teardown USB gadget: detach UDC, stop daemons, clear ffs ready flags, and unlink functions
 on property:sys.usb.config=none && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/UDC "none"
     stop adbd
@@ -53,12 +59,15 @@ on property:sys.usb.config=none && property:sys.usb.configfs=1
     rm /config/usb_gadget/g1/configs/b.1/f3
     setprop sys.usb.state ${sys.usb.config}
 
+# Reset ADB FunctionFS ready flag when adbd stops
 on property:init.svc.adbd=stopped
     setprop sys.usb.ffs.ready 0
 
+# Start adbd when ADB-only mode is requested
 on property:sys.usb.config=adb && property:sys.usb.configfs=1
     start adbd
 
+# Bind ffs.adb (0x22b8:0x2e81) to config b.1 and enable UDC once FunctionFS is ready
 on property:sys.usb.ffs.ready=1 && property:sys.usb.config=adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
     rm /config/usb_gadget/g1/configs/b.1/f1
@@ -70,9 +79,11 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=adb && property:sys.u
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
+# Start adbd when MTP+ADB mode is requested
 on property:sys.usb.config=mtp,adb && property:sys.usb.configfs=1
     start adbd
 
+# Bind ffs.mtp (f1) and ffs.adb (f2) with PID 0x2e76 once both FunctionFS endpoints are ready
 on property:sys.usb.ffs.ready=1 && property:sys.usb.ffs.mtp.ready=1 && property:sys.usb.config=mtp,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "mtp_adb"
     rm /config/usb_gadget/g1/configs/b.1/f1
@@ -85,6 +96,7 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.ffs.mtp.ready=1 && property:
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
+# Bind MTP-only function (0x22b8:0x2e82) when MTP FunctionFS is ready
 on property:sys.usb.config=mtp && property:sys.usb.ffs.mtp.ready=1 && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "mtp"
     rm /config/usb_gadget/g1/configs/b.1/f1
@@ -96,8 +108,8 @@ on property:sys.usb.config=mtp && property:sys.usb.ffs.mtp.ready=1 && property:s
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
-# minadbd owns /dev/usb-ffs/adb/ep0 during sideload
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=sideload && property:sys.usb.configfs=1
+# Sideload mode: minadbd owns /dev/usb-ffs/adb/ep0 (adbd stays stopped); bind ffs.adb (0x22b8:0x2e81) and UDC
+on property:sys.usb.config=sideload && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2
