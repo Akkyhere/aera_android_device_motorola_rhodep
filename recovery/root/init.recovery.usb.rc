@@ -54,9 +54,9 @@ on property:sys.usb.config=none && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/bDeviceClass 0
     write /config/usb_gadget/g1/bDeviceSubClass 0
     write /config/usb_gadget/g1/bDeviceProtocol 0
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
+    rm -f /config/usb_gadget/g1/configs/b.1/f1
+    rm -f /config/usb_gadget/g1/configs/b.1/f2
+    rm -f /config/usb_gadget/g1/configs/b.1/f3
     setprop sys.usb.state ${sys.usb.config}
 
 # Reset ADB FunctionFS ready flag when adbd stops
@@ -70,9 +70,9 @@ on property:sys.usb.config=adb && property:sys.usb.configfs=1
 # Bind ffs.adb (0x22b8:0x2e81) to config b.1 and enable UDC once FunctionFS is ready
 on property:sys.usb.ffs.ready=1 && property:sys.usb.config=adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
+    rm -f /config/usb_gadget/g1/configs/b.1/f1
+    rm -f /config/usb_gadget/g1/configs/b.1/f2
+    rm -f /config/usb_gadget/g1/configs/b.1/f3
     write /config/usb_gadget/g1/idVendor 0x22b8
     write /config/usb_gadget/g1/idProduct 0x2e81
     symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
@@ -86,9 +86,9 @@ on property:sys.usb.config=mtp,adb && property:sys.usb.configfs=1
 # Bind ffs.mtp (f1) and ffs.adb (f2) with PID 0x2e76 once both FunctionFS endpoints are ready
 on property:sys.usb.ffs.ready=1 && property:sys.usb.ffs.mtp.ready=1 && property:sys.usb.config=mtp,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "mtp_adb"
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
+    rm -f /config/usb_gadget/g1/configs/b.1/f1
+    rm -f /config/usb_gadget/g1/configs/b.1/f2
+    rm -f /config/usb_gadget/g1/configs/b.1/f3
     write /config/usb_gadget/g1/idVendor 0x22b8
     write /config/usb_gadget/g1/idProduct 0x2e76
     symlink /config/usb_gadget/g1/functions/ffs.mtp /config/usb_gadget/g1/configs/b.1/f1
@@ -99,9 +99,9 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.ffs.mtp.ready=1 && property:
 # Bind MTP-only function (0x22b8:0x2e82) when MTP FunctionFS is ready
 on property:sys.usb.config=mtp && property:sys.usb.ffs.mtp.ready=1 && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "mtp"
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
+    rm -f /config/usb_gadget/g1/configs/b.1/f1
+    rm -f /config/usb_gadget/g1/configs/b.1/f2
+    rm -f /config/usb_gadget/g1/configs/b.1/f3
     write /config/usb_gadget/g1/idVendor 0x22b8
     write /config/usb_gadget/g1/idProduct 0x2e82
     symlink /config/usb_gadget/g1/functions/ffs.mtp /config/usb_gadget/g1/configs/b.1/f1
@@ -111,9 +111,9 @@ on property:sys.usb.config=mtp && property:sys.usb.ffs.mtp.ready=1 && property:s
 # Sideload mode: minadbd owns /dev/usb-ffs/adb/ep0 (adbd stays stopped); bind ffs.adb (0x22b8:0x2e81) and UDC
 on property:sys.usb.config=sideload && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
+    rm -f /config/usb_gadget/g1/configs/b.1/f1
+    rm -f /config/usb_gadget/g1/configs/b.1/f2
+    rm -f /config/usb_gadget/g1/configs/b.1/f3
     write /config/usb_gadget/g1/idVendor 0x22b8
     write /config/usb_gadget/g1/idProduct 0x2e81
     symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
