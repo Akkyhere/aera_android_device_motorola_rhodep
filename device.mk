@@ -12,6 +12,10 @@ PRODUCT_TARGET_VNDK_VERSION := 30
 PRODUCT_SHIPPING_API_LEVEL := 30
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 
+ifeq ($(AERA_ENABLE_MOBILE_DATA),1)
+PRODUCT_PACKAGES += aera-cellular-provider
+endif
+
 # Boot control hal for A/B
 PRODUCT_PACKAGES += android.hardware.boot@1.1-impl-qti \
     android.hardware.boot@1.1-impl-qti.recovery \
