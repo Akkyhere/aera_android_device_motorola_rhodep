@@ -545,9 +545,13 @@ struct Session {
     if(link_owned){Ip({"link","del",kInterface},false);link_owned=false;}
     wds.reset();wda.reset();dpm.reset();nas.reset();
     if(modem_owned) {
-      if(!ModemIsOffline())Write(modem+"/state","stop");
-      for(int i=0;i<200&&Read(modem+"/state")!="offline";++i)
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      if(IsSubsysModem(modem)) {
+        ModemStop();
+      } else {
+        if(!ModemIsOffline())Write(modem+"/state","stop");
+        for(int i=0;i<200&&Read(modem+"/state")!="offline";++i)
+          std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      }
       if(!ModemIsOffline())throw std::runtime_error("Modem shutdown failed. Reboot recovery before flashing");
       modem_owned=false;
     }
